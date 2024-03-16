@@ -45,7 +45,12 @@ complex operator*(matrix a,complex z) {
 	return proj((a[0][0]*z+a[0][1])/(a[1][0]*z+a[1][1]));
 }
 std::array<complex,2> fixed_pts(matrix a) {
-	
+	if(a[1][0]!=complex(0)) {
+		matrix b=sl2(a);
+		return {(a[0][0]-a[1][1]+sqrt(tr(b)*tr(b)-complex(4)))/(complex(2)*a[1][0]),(a[0][0]-a[1][1]-sqrt(tr(b)*tr(b)-complex(4)))/(complex(2)*a[1][0])};
+	} else {
+		return {proj(complex(1)/complex(0)),a[0][1]/(a[1][1]-a[0][0])};
+	}
 }
 
 // Geometric construct - attempting to consider lines and circles simultaneously which will be hard
