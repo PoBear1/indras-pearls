@@ -61,11 +61,11 @@ private:
 	long double a,b,c,d;
 public:
 	cline(long double a,long double b,long double c,long double d):a(a),b(b),c(c),d(d) {
-		if(b*b+c*c<a*d) {throw std::runtime_error("Bad initialisation of cline class");}
+		// if(b*b+c*c<a*d) {throw std::runtime_error("Bad initialisation of cline class");}
 	};
 	long double radius() {
 		if(a!=0) {
-			return sqrt((b*b+c*c)/a-d);
+			return sqrt((b*b+c*c)/(a*a)-d/a);
 		} else {
 			return real(proj(complex(1)/complex(0)));
 		}
@@ -85,12 +85,28 @@ public:
 	}
 	cline mobius(matrix T) {
 		// god this was painful
-		complex z=(T[0][1]+complex(b,c)*T[0][0])*(T[1][1]+conj(complex(b,c))*T[1][0])*a-T[0][0]*T[1][0]*(b*b+c*c-a*d);
+
+		// AND this does not work every single time!!!!
+		// Bro it DOES NOT work on lines! 
+		// It doesn't even work reliably for CIRCLES!
+		// Attempt 1 by converting into circle form then bashing
+		// Doesn't work unsurprisingly because we have to divide by a somewhere
+		// complex z=(T[0][1]+complex(b,c)*T[0][0])*(T[1][1]+conj(complex(b,c))*T[1][0])*a-T[0][0]*T[1][0]*(b*b+c*c-a*d);
+		// return cline(
+		// 	real(a*((T[1][1]+b*T[1][0])+T[1][0]*T[1][0]*c*c)-T[1][0]*T[1][0]*(b*b+c*c-a*d)),
+		// 	real(z),
+		// 	-imag(z),
+		// 	real(a*((T[0][1]+b*T[0][0])+T[0][0]*T[0][0]*c*c)-T[0][0]*T[0][0]*(b*b+c*c-a*d))
+		// );
+
+		// Attempt 2 by plugging the inverse straight in and bashing
+		// Actually works finally.
+		complex z=(a*T[0][1]*T[1][1]+T[0][1]*T[1][0]*complex(b,c)+T[0][0]*T[1][1]*complex(b,-c)+d*T[0][0]*T[1][0]);
 		return cline(
-			real(a*((T[1][1]+b*T[1][0])+T[1][0]*T[1][0]*c*c)-T[1][0]*T[1][0]*(b*b+c*c-a*d)),
+			real(a*T[1][1]*T[1][1]+d*T[1][0]*T[1][0]+(2*b)*T[1][0]*T[1][1]),
 			real(z),
-			-imag(z),
-			real(a*((T[0][1]+b*T[0][0])+T[0][0]*T[0][0]*c*c)-T[0][0]*T[0][0]*(b*b+c*c-a*d))
+			imag(-z),
+			real(a*T[0][1]*T[0][1]+d*T[0][0]*T[0][0]+(2*b)*T[0][0]*T[0][1])
 		);
 	}
 	std::array<long double,4> get_params() {
