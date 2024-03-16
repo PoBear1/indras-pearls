@@ -15,6 +15,9 @@ matrix I={{{1,0},{0,1}}};
 complex det(matrix a) {
 	return a[0][0]*a[1][1]-a[0][1]*a[1][0];
 }
+complex tr(matrix a) {
+	return a[0][0]+a[1][1];
+}
 matrix inv(matrix a) {
 	if(det(a)==complex(0)) {
 		throw std::runtime_error("Error when calling \"matrix inv(matrix)\": attempting to invert matrix with determinant zero");
@@ -23,13 +26,26 @@ matrix inv(matrix a) {
 		return {{{a[1][1]/d,-a[0][1]/d},{-a[1][0]/d,a[0][0]/d}}};
 	}
 }
-matrix operator*(matrix a,matrix b) {return {{{a[0][0]*b[0][0]+a[0][1]*b[1][0],a[0][0]*b[0][1]+a[0][1]*b[1][1]},{a[1][0]*b[0][0]+a[1][1]*b[1][0],a[1][0]*b[0][1]+a[1][1]*b[1][1]}}};}
+matrix operator*(matrix a,matrix b) {
+	return {
+		{{a[0][0]*b[0][0]+a[0][1]*b[1][0],a[0][0]*b[0][1]+a[0][1]*b[1][1]},
+		{a[1][0]*b[0][0]+a[1][1]*b[1][0],a[1][0]*b[0][1]+a[1][1]*b[1][1]}}
+	};
+}
 matrix operator/(matrix a,matrix b) {return a*inv(b);}
-matrix sl2(matrix a) {if(det(a)!=complex(0)) {complex d=det(a); return {{{a[0][0]/sqrt(d),a[0][1]/sqrt(d)},{a[1][0]/sqrt(d),a[1][1]/sqrt(d)}}};} else {throw std::runtime_error("Attempting to normalise degenerate matrix");}}
+matrix sl2(matrix a) {
+	if(det(a)!=complex(0)) {
+		complex d=det(a); 
+		return {{{a[0][0]/sqrt(d),a[0][1]/sqrt(d)},{a[1][0]/sqrt(d),a[1][1]/sqrt(d)}}};
+	} else {throw std::runtime_error("Attempting to normalise degenerate matrix");}
+}
 
 // mobius maps
 complex operator*(matrix a,complex z) {
 	return proj((a[0][0]*z+a[0][1])/(a[1][0]*z+a[1][1]));
+}
+std::array<complex,2> fixed_pts(matrix a) {
+	
 }
 
 // Geometric construct - attempting to consider lines and circles simultaneously which will be hard
@@ -39,7 +55,9 @@ private:
 	// The representation will be basically like a|z|^2-2Re(z(b-ic))+d=0
 	long double a,b,c,d;
 public:
-	cline(long double a,long double b,long double c,long double d):a(a),b(b),c(c),d(d) {if(b*b+c*c<a*d) {throw std::runtime_error("Bad initialisation of cline class");}};
+	cline(long double a,long double b,long double c,long double d):a(a),b(b),c(c),d(d) {
+		if(b*b+c*c<a*d) {throw std::runtime_error("Bad initialisation of cline class");}
+	};
 	long double radius() {
 		if(a!=0) {
 			return sqrt((b*b+c*c)/a-d);
