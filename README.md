@@ -7,6 +7,12 @@ Prelude: How to compile the asy sources
 ---------------------
 If you have asy installed, typing `asy -o example.asy example` into the terminal if you want to compile `example.asy` should be enough.
 
+ch1: The Language of Symmetry
+---------------------
+`example.asy` - testing asy's drawing capabilities out with a sample program (Box 3, pg. 32). 
+
+`template.asy` - source code for project 1.4
+
 ch2-3: A Delightful Fiction/Double Spirals and Mobius Maps
 ---------------------
 `complex_calc.h` - main lib we are going to be using for most of the calculations: contains cline classes and matrix classes that allow for mobius map computations. 
