@@ -20,3 +20,7 @@ ch2-3: A Delightful Fiction/Double Spirals and Mobius Maps
 `cmplx_lib/asy_drawing.h` - header file to allow us to draw our figures directly from our calculations in C++
 
 `example.cpp` - an example trying to showcase what we can do; also some tests of the cline class, especially with the mobius function being applied on it with the function $f(z)=\frac{1}{z}$ (i.e. almost inversion) and also showcasing some uses of the draw class.
+
+ch4: The Schottky Dance
+---------------------
+`ch4/schottky.cpp` - incomplete implementation of the schottky fractal
