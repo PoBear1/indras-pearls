@@ -4,12 +4,17 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <array>
 #include <map>
-using namespace std;
+using std::vector;
+using std::pair;
+using std::string;
+using std::array;
 class search_wordtree {
-private:
+public:
 // okay my brain is like dying right now so i have to make annotations
-// here we first build a template list from which we calculate the entire list (pain...) (i was never good at bfs stuff; only could do dfs help)
+// here we first build a template list from which we calculate the entire list (pain...) 
+// (i was never good at bfs stuff; only could do dfs help)
 // ----------------------------------------------------------------------
 // THOUGHT PROCESS TO GET ALGORITHM
 // ok let's plan this
@@ -19,7 +24,8 @@ private:
 // oh wait nvm i've got it i'm stoopid
 // so first say how many elements were originally in the sequence (call this M)
 // then go over each of these original elements (i.e. elements with index before M)
-// after that we are going to take each element in order, then you know just generate from there by appending the number at the end unless if the number is equal 
+// after that we are going to take each element in order, then you know just generate from there 
+// by appending the number at the end unless if the number is equal 
 // ----------------------------------------------------------------------
 // here, no_generators DOES NOT INCLUDE the inverses
 	static vector<vector<int>> generate_template(uint64_t irred_no_generators,int lvl) {
@@ -27,7 +33,8 @@ private:
 		for(int i=0;i<2*irred_no_generators;++i) {
 			generate_sequence.push_back({i});
 		}
-		// this is literally so that we can actually keep track of memory; after all i'm running this on a macbook pro so i don't have a lot of memory to spare
+		// this is literally so that we can actually keep track of memory; after all i'm running this on a macbook pro 
+		// so i don't have a lot of memory to spare
 		vector<int> placebo{};
 		uint64_t ptr1{0},ptr2{0};
 		for(int i=1;i<=lvl;++i) {
@@ -43,9 +50,9 @@ private:
 			}
 			ptr1=ptr2;
 		}
+		generate_sequence.insert(generate_sequence.begin(),{});
 		return generate_sequence;
 	}
-public:
 // obv. we first generate the entire list now; gl tho!
 	static vector<pair<matrix,int>> generate_list(vector<matrix> v,int lvl) {
 		auto irred_no_generators=(v.size())/2;
@@ -53,7 +60,7 @@ public:
 		vector<pair<matrix,int>> list{};
 		matrix result{I};
 		for(auto v1:template_list) {
-			for(auto it=v1.rbegin();it!=v1.rend();--it) {
+			for(auto it=v1.rbegin();it!=v1.rend();++it) {
 				result=v[(*it)]*result;
 			}
 			list.push_back({result,*(v1.rbegin())});
@@ -62,32 +69,85 @@ public:
 		return list;
 	}
 };
+// wait lol there's a way to construct good circles!
 class schottky_fractal {
 private:
-// alright time to construct our list of circles to plot!
-// ok now how do i choose my circles properly
 	matrix a,b,A,B;
 	int lvl;
 public:
-	schottky_fractal(matrix a,matrix b,int lvl_in) {B=inv(b); A=inv(a); lvl=lvl_in;}
-	vector<cline> produce_fractal(cline D_a,cline D_b,cline D_A,cline D_B) {
-		vector<cline> circles;
+	schottky_fractal(matrix a_in,matrix b_in,int lvl_in) {a=a_in; b=b_in; B=inv(b_in); A=inv(a_in); lvl=lvl_in;}
+	pair<cline,cline> generate_pair(cline D,matrix T) {
+		auto fixed=fixed_pts(T); 
+		if(abs(fixed[0]-D.centre())>D.radius()&&abs(fixed[1]-D.centre())>D.radius()) {
+			throw std::runtime_error("Attempting to use circles not containing fixed points");
+		} else {}
+		if((D.mobius(T)).radius()<D.radius()) {
+			if((D.mobius(T)).contains(T*(D.centre()))) {
+				throw std::runtime_error("Attempting to use circle containing negative fixed point");
+			} else {
+				return {D,D.mobius(T)};
+			}
+		} else if((D.mobius(T)).radius()==D.radius()) {
+			return {D,D.mobius(T)};
+		} else {
+			// i miss year 9...
+			cline prev{D},now{D.mobius(T)};
+			while(now.contains(T*prev.centre())) {
+				prev=now;
+				now=prev.mobius(T);
+			}
+			return {prev,now}; 
+		}
+	}
+	vector<pair<cline,int>> produce_fractal(cline D_a,cline D_b,cline D_A,cline D_B) {
+		vector<pair<cline,int>> circles;
 		vector<pair<matrix,int>> list=search_wordtree::generate_list({a,b,A,B},lvl);
 		for(auto i:list) {
-			if(i.second!=2) {circles.push_back(D_a.mobius(i.first));} else {}
-		}
-		for(auto i:list) {
-			if(i.second!=3) {circles.push_back(D_b.mobius(i.first));} else {}
-		}
-		for(auto i:list) {
-			if(i.second!=0) {circles.push_back(D_A.mobius(i.first));} else {}
-		}
-		for(auto i:list) {
-			if(i.second!=1) {circles.push_back(D_B.mobius(i.first));} else {}
+			if(i.second!=2) {circles.push_back({D_a.mobius(i.first),0});} else {}
+			if(i.second!=3) {circles.push_back({D_b.mobius(i.first),1});} else {}
+			if(i.second!=0) {circles.push_back({D_A.mobius(i.first),2});} else {}
+			if(i.second!=1) {circles.push_back({D_B.mobius(i.first),3});} else {}
 		}
 		return circles;
 	}
 };
 int main() {
+	std::cout<<std::setprecision(12);
+	complex sqrt2=sqrt(2),im{complex(0,1)};
+	complex s=complex(0.5,0),t=complex(0.2,0);
+
+	// Real Fuchsian group
+	// cline C_b((complex(1,0)/t+complex(1,0)/s)/complex(2),real((complex(1,0)/t-complex(1,0)/s)/complex(2))),C_a(-(s+t)/(complex(2)),real(s-t)/2),C_B(-real(complex(1,0)/(complex(2)*t)+complex(1,0)/(complex(2)*s)),real(complex(1,0)/(complex(2)*t)-complex(1,0)/(complex(2)*s))),C_A(complex(real(s+t)/2),real(s-t)/2);
+	// matrix a{{{s+t,-complex(2,0)*s*t},{-complex(2,0),s+t}}},b{{{s+t,complex(2,0)},{complex(2,0)*s*t,s+t}}},A=inv(a),B=inv(b);
+
+	// π/4-Fuchsian group
+	matrix a{{{sqrt2,im},{-im,sqrt2}}},b{{{sqrt2,1},{1,sqrt2}}},A=inv(a),B=inv(b);
+	cline C_b(complex(sqrt(2),0),1),C_a(complex(0,sqrt(2)),1),C_B(complex(-sqrt(2),0),1),C_A(complex(0,-sqrt(2)),1);
+	std::cout<<det(a)<<" "<<det(b)<<" "<<det(A)<<" "<<det(B)<<"\n";
+	schottky_fractal theta_fuchsian(a,b,9);
+	vector<pair<cline,int>> list_circles=theta_fuchsian.produce_fractal(C_a,C_b,C_A,C_B);
+	draw_asy example("asy/theta-fuchsian.asy");
+	
+	// example of how you are supposed to use the asy_drawing thing
+	// example.draw(circle,"heavygreen"); 
+	// example.draw(invert,"orange");
+	// example.draw(line,"orange");
+	// example.draw(invert_line,"heavygreen");
+
+	// Here the first colour is the draw-colour, the second is the fill-colour
+	vector<pair<string,string>> colours{{"brown","palered"},{"heavyblue","paleblue"},{"darkgreen","lightgreen"},{"fuchsia","Yellow"}};
+	example.filldraw(C_a,colours[0].first,colours[0].second);
+	example.filldraw(C_b,colours[1].first,colours[1].second);
+	example.filldraw(C_A,colours[2].first,colours[2].second);
+	example.filldraw(C_B,colours[3].first,colours[3].second);
+	int counter{0};
+	for(auto i:list_circles) {
+		example.filldraw(i.first,colours[i.second].first,colours[i.second].second);
+		counter++;
+	}
+	std::cout<<counter<<"\n";
+	example.filldraw(cline(complex(0),1),"black","invisible");
+	example.clip(complex(-2.8,-2.8),complex(2.8,2.8));
+	example.close();
 	return 0;
 }
