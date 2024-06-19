@@ -25,7 +25,9 @@ ch2-3: A Delightful Fiction/Double Spirals and Mobius Maps
 
 ch4: The Schottky Dance
 ---------------------
-`schottky.cpp` - complete implementation of the schottky fractal for two generators; can be edited (although not without some effort) to generate fractals with more generators.
+`schottky.cpp` - code to render the $\frac{\pi}{4}$-Schottky group.
+
+`cmplx_lib/schottky.h` - complete implementation of the schottky fractal for two generators; can be edited (although not without some effort) to generate fractals with more generators.
 
 `./asy/theta-fuchsian.asy`, `./asy/theta-fuchsian.asy.pdf` - rendering of the $\frac{\pi}{4}$-Schottky group.
 
